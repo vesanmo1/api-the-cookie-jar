@@ -20,6 +20,8 @@ const connect = async () => {
 
 }
 
+connect()
+
 const app = express()
 
     app.use( cors() )
@@ -37,5 +39,4 @@ const app = express()
 
 app.listen( PORT , ()=> {
     console.log(`Iniciando API en el puesrto ${PORT}`)
-    connect()
 }) 
