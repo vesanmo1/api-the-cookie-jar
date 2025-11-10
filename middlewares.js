@@ -1,8 +1,10 @@
+const {SECRET_API_KEY} = process.env
+
 const middlewareAuth = ( req , res , next ) => {
     
     const { headers } = req
 
-    if( headers['secret-api-key'] == 12345 ){
+    if( headers['secret-api-key'] == SECRET_API_KEY ){
         next()
     }else{
         let error = new Error (`No tienes autorización para ver el contenido`)

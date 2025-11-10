@@ -1,17 +1,20 @@
 console.clear()
 console.log(`Iniciando The Cookie Jar`)
 
-const PORT = 3000
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
+
+require('dotenv').config()
+
+const { PORT , MONGO_URL } = process.env
 
 const { middlewareAuth, middleware404, middleware500 } = require('./middlewares')
 const { router } = require('./router')
 
 const connect = async () => {
 
-    await mongoose.connect('mongodb://127.0.0.1:27017/the-cookie-jar')
+    await mongoose.connect(MONGO_URL)
         .then ( ()=> console.log('🌿 Conectado a MongoDB'))
         .catch (error => console.log(error.message))
 
