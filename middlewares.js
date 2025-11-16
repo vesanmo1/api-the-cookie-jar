@@ -1,3 +1,16 @@
+/*---------------------------------------------------------------------*\
+ * Middlewares de la API de Cookies (middlewares.js)
+ *
+ * Estos middlewares manejan la autenticación, la validación de parámetros
+ * y los errores de la API.
+ *
+ * @middleware {middlewareAuth}      Comprueba la cabecera secret-api-key para autorizar la petición
+ * @middleware {middlewareType}      Valida el parámetro :type (vegana | sin-gluten)
+ * @middleware {middlewareObjectId}  Valida el parámetro :_id como ObjectId de MongoDB
+ * @middleware {middleware404}       Gestiona las rutas no encontradas (404)
+ * @middleware {middleware500}       Gestiona los errores del servidor (500)
+\*---------------------------------------------------------------------*/
+
 const {SECRET_API_KEY} = process.env
 
 const middlewareAuth = ( req , res , next ) => {

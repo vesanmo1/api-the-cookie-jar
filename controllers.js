@@ -1,3 +1,14 @@
+/*---------------------------------------------------------------------*\
+ * Ruta de Cookies (controllers.js)
+ * Este controlador maneja las solicitudes relacionadas con las cookies.
+ 
+ * route {GET}    /cookies
+ * route {GET}    /cookies/type/:type
+ * route {POST}   /cookies
+ * route {PUT}    /cookies/:_id
+ * route {DELETE} /cookies/:_id
+\*---------------------------------------------------------------------*/
+
 const { Cookie } = require('./schemas')
 
 const getCookies = async ( req , res , next) => {

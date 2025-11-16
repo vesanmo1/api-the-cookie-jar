@@ -1,3 +1,15 @@
+/*-----------------------------------------------------------------------------*\
+ * Modelo de Cookie
+ 
+ * Este modelo define la estructura y comportamiento de los registros
+ * de cookies en la base de datos.
+ 
+ * property {string}   cookie_name  - Nombre de la cookie.
+ * property {string}   description  - Descripción de la cookie.
+ * property {string[]} type         - Tipo de cookie (vegana, sin-gluten).
+ * property {string}   img_url      - URL de la imagen de la cookie.
+\*-----------------------------------------------------------------------------*/
+
 const mongoose = require('mongoose')
 
 const cookieSchema = new mongoose.Schema ( 
@@ -16,7 +28,6 @@ const cookieSchema = new mongoose.Schema (
             maxlength: [400, 'La descripción no puede superar los 400 caracteres']
         },
 
-        //PARA ESTA PARTE HE USADO CHATGPT
         type: {
             type: [String],                            // array de strings
             enum: ['vegana', 'sin-gluten'],            // valores permitidos
@@ -26,7 +37,7 @@ const cookieSchema = new mongoose.Schema (
 
         img_url: {
             type: String,
-            required: [true, 'La imagen es obligatoria'],
+            required: true,
             trim: true,
             match: [/^https?:\/\/.+/i, 'URL de imagen inválida'] ,
         },        
