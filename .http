@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:3000
+@authToken = {{authToken}}
+
+/**
+ * THE COOKIE JAR / API TESTS
+ * Puerto fijo: 3000
+ * Ajusta @authToken si middlewareAuth requiere algo concreto
+ */
+
+### Obtener todas las cookies
+GET {{baseUrl}}/cookies
+Authorization: Bearer {{authToken}}
+
+###
+
+### Crear una cookie nueva
+POST {{baseUrl}}/cookies
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Chocolate Chip",
+  "type": "vegana",
+  "price": 2.5,
+  "stock": 100
+}
+
+###
+
+### Actualizar una cookie por ID
+PUT {{baseUrl}}/cookies/663fa8123abcde0012345678
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Chocolate Chip Deluxe",
+  "type": "vegana",
+  "price": 3.0,
+  "stock": 80
+}
+
+###
+
+### Eliminar una cookie por ID
+DELETE {{baseUrl}}/cookies/663fa8123abcde0012345678
+Authorization: Bearer {{authToken}}
+
+###
+
+### Obtener cookies por tipo
+GET {{baseUrl}}/cookies/type/vegana
+Authorization: Bearer {{authToken}}
