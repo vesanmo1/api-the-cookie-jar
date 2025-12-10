@@ -24,7 +24,16 @@ const getCookiesByType = async ( req , res , next) => {
 
     const { type } = req.params
 
-    const search = await Cookie.find({ type })
+    // HECHO CON CHATGPT
+    // Mapeo de slug (URL) → valor tal y como está en la BD
+    const TYPE_MAP = {
+        "vegana": "Vegana",
+        "sin-gluten": "Sin gluten",
+    }
+
+    const dbType = TYPE_MAP[type] || type
+
+    const search = await Cookie.find({ types: dbType })
 
     res
         .status(201)
@@ -38,7 +47,7 @@ const postCookies = async ( req , res , next) => {
     const newCookie = new Cookie({
         cookie_name,
         description,
-        type,
+        types,
         img_url
     })
 
@@ -57,7 +66,7 @@ const postCookies = async ( req , res , next) => {
 const putCookies = async ( req , res , next) => {
 
     const { _id } = req.params
-    const { cookie_name , description , type , img_url } = req.body
+    const { cookie_name , description , types , img_url } = req.body
 
     const update = await Cookie.findByIdAndUpdate( _id , { cookie_name , description , type , img_url })
 
