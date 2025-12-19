@@ -60,7 +60,7 @@ const postCookies = async ( req , res , next) => {
             message: 'Añadiendo cookie',                    
             details: newCookie,
             data: search
-        });  
+        })  
 }
 
 const putCookies = async ( req , res , next) => {
@@ -78,7 +78,7 @@ const putCookies = async ( req , res , next) => {
             message: `Actualizando la cookie con _id ${_id}`,
             details: update,
             data: search
-        }); 
+        })
 }
 
 const deleteCookies = async ( req , res , next) => {
