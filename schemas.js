@@ -6,8 +6,10 @@
  
  * property {string}   cookie_name  - Nombre de la cookie.
  * property {string}   description  - Descripción de la cookie.
- * property {string[]} type         - Tipo de cookie (vegana, sin-gluten).
- * property {string}   img_url      - URL de la imagen de la cookie.
+ * property {string[]} types        - Tipos de cookie ("Vegana", "Sin gluten").
+ * property {string}   image_png    - Ruta/URL de la imagen PNG.
+ * property {string}   image_webp   - Ruta/URL de la imagen WEBP.
+ * property {boolean}  visible      - Si la cookie se muestra o no.
 \*-----------------------------------------------------------------------------*/
 
 const mongoose = require('mongoose')
@@ -28,19 +30,30 @@ const cookieSchema = new mongoose.Schema (
             maxlength: [400, 'La descripción no puede superar los 400 caracteres']
         },
 
-        type: {
+        types: {
             type: [String],                            // array de strings
-            enum: ['vegana', 'sin-gluten'],            // valores permitidos
+            enum: ['Vegana', 'Sin gluten'],           // valores permitidos
             default: [],                               // si no se envía nada → []
             required: false                            // campo opcional
         },
 
-        img_url: {
+        image_png: {
             type: String,
             required: true,
             trim: true,
-            match: [/^https?:\/\/.+/i, 'URL de imagen inválida'] ,
-        },        
+        },   
+        
+        image_webp: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+
+        visible: {
+            type: Boolean,
+            required: true,
+            default: true,
+        },
     },
 
     {

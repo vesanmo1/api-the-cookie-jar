@@ -4,6 +4,7 @@
  
  * route {GET}    /cookies
  * route {GET}    /cookies/type/:type
+ * route {GET}    /cookies/visible/:visible
  * route {POST}   /cookies
  * route {PUT}    /cookies/:_id
  * route {DELETE} /cookies/:_id
@@ -36,19 +37,38 @@ const getCookiesByType = async ( req , res , next) => {
     const search = await Cookie.find({ types: dbType })
 
     res
-        .status(201)
+        .status(200)
         .json({ message : `Mostrando todas las cookies que son ${type}` , data : search })
+}
+
+const getCookiesByVisibility = async ( req, res , next ) => {
+
+    const { visible } = req.params
+
+    /*-------------------------------*\
+    * 'true' === 'true'    // true
+    * 'false' === 'true'   // false
+    \*-------------------------------*/
+    const visibleBool = (visible === 'true')
+
+    const search = await Cookie.find({ visible: visibleBool })
+
+    res
+        .status(200)
+        .json({message : `Mostrando a todas la cookies con visibilidad: ${visible}` , data : search})
 }
 
 const postCookies = async ( req , res , next) => {
 
-    const { cookie_name , description , type , img_url } = req.body
+    const { cookie_name , description , types , image_png , image_webp , visible } = req.body
 
     const newCookie = new Cookie({
         cookie_name,
         description,
         types,
-        img_url
+        image_png,
+        image_webp,
+        visible
     })
 
     await newCookie.save()
@@ -66,9 +86,9 @@ const postCookies = async ( req , res , next) => {
 const putCookies = async ( req , res , next) => {
 
     const { _id } = req.params
-    const { cookie_name , description , types , img_url } = req.body
+    const { cookie_name , description , types , image_png , image_webp , visible } = req.body
 
-    const update = await Cookie.findByIdAndUpdate( _id , { cookie_name , description , type , img_url })
+    const update = await Cookie.findByIdAndUpdate( _id , { cookie_name , description , types , image_png , image_webp , visible })
 
     const search = await Cookie.find()
 
@@ -103,6 +123,7 @@ const deleteCookies = async ( req , res , next) => {
 module.exports = {
     getCookies,
     getCookiesByType,
+    getCookiesByVisibility,
     postCookies,
     putCookies,
     deleteCookies

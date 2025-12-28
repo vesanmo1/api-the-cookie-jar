@@ -5,7 +5,8 @@
  * y los errores de la API.
  *
  * @middleware {middlewareAuth}      Comprueba la cabecera secret-api-key para autorizar la petición
- * @middleware {middlewareType}      Valida el parámetro :type (vegana | sin-gluten)
+ * @middleware {middlewareType}      Valida el parámetro :type ("Vegana" | "Sin-gluten")
+ * @middleware {middlewareVisible}   Valida el parámetro :visible (true | false)
  * @middleware {middlewareObjectId}  Valida el parámetro :_id como ObjectId de MongoDB
  * @middleware {middleware404}       Gestiona las rutas no encontradas (404)
  * @middleware {middleware500}       Gestiona los errores del servidor (500)
@@ -42,6 +43,20 @@ const middlewareType = ( req , res , next ) => {
     }
 }
 
+const middlewareVisible = ( req , res , next ) => {
+    console.log (`middlewareVisible`)
+
+    const { visible } = req.params
+
+    if (visible == 'true' || visible == 'false') {
+        next()
+    }else {
+        let error = new Error (`El parámetro visible no es válido`)
+            error.status = 400
+        next(error)
+    }
+}
+
 const middlewareObjectId = ( req , res , next ) => {
 
     const {_id} = req.params
@@ -73,6 +88,7 @@ const middleware500 = ( error , req , res , next ) => {
 module.exports = {
     middlewareAuth,
     middlewareType,
+    middlewareVisible,
     middlewareObjectId,
     middleware404,
     middleware500
