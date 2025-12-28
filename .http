@@ -1,10 +1,11 @@
 @baseUrl = http://localhost:3000
 @authToken = {{authToken}}
 
+@cookieId = 690cb5e7c977b5705cde5ed2
+
 /**
  * THE COOKIE JAR / API TESTS
  * Puerto fijo: 3000
- * Ajusta @authToken si middlewareAuth requiere algo concreto
  */
 
 ### Obtener todas las cookies
@@ -13,40 +14,61 @@ Authorization: Bearer {{authToken}}
 
 ###
 
-### Crear una cookie nueva
+### Obtener cookies por tipo (siendo types un array, tu backend decidirá si busca coincidencia)
+GET {{baseUrl}}/cookies/type/vegana
+Authorization: Bearer {{authToken}}
+
+###
+
+### Obtener cookies por visibilidad (true/false)
+GET {{baseUrl}}/cookies/visible/true
+Authorization: Bearer {{authToken}}
+
+###
+
+### Crear una cookie nueva (campos reales del documento)
 POST {{baseUrl}}/cookies
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "name": "Chocolate Chip",
-  "type": "vegana",
-  "price": 2.5,
-  "stock": 100
+  "cookie_name": "Red Velvet Cookie",
+  "description": "Esta cookie es el sueño de cualquier Red Velvet lover.",
+  "types": [],
+  "image_png": "red-velvet.png",
+  "image_webp": "red-velvet.webp",
+  "visible": true
 }
 
 ###
 
-### Actualizar una cookie por ID
-PUT {{baseUrl}}/cookies/663fa8123abcde0012345678
+### Actualizar una cookie por _id (PUT)
+PUT {{baseUrl}}/cookies/{{cookieId}}
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "name": "Chocolate Chip Deluxe",
-  "type": "vegana",
-  "price": 3.0,
-  "stock": 80
+  "cookie_name": "Red Velvet Cookie (Updated)",
+  "description": "Descripción actualizada.",
+  "types": ["red-velvet", "premium"],
+  "image_png": "red-velvet.png",
+  "image_webp": "red-velvet.webp",
+  "visible": true
 }
 
 ###
 
-### Eliminar una cookie por ID
-DELETE {{baseUrl}}/cookies/663fa8123abcde0012345678
+### Ocultar una cookie (si tu PUT permite actualizar parcial, esto funcionará; si no, usa el body completo de arriba)
+PUT {{baseUrl}}/cookies/{{cookieId}}
 Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "visible": false
+}
 
 ###
 
-### Obtener cookies por tipo
-GET {{baseUrl}}/cookies/type/vegana
+### Eliminar una cookie por _id
+DELETE {{baseUrl}}/cookies/{{cookieId}}
 Authorization: Bearer {{authToken}}
