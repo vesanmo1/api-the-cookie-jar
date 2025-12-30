@@ -8,14 +8,18 @@
  * @middleware {middlewareType}      Valida el parámetro :type ("Vegana" | "Sin-gluten")
  * @middleware {middlewareVisible}   Valida el parámetro :visible (true | false)
  * @middleware {middlewareObjectId}  Valida el parámetro :_id como ObjectId de MongoDB
+ * @middleware {uploadImage}             Multer: gestiona subida de imagen (multipart/form-data)
  * @middleware {middleware404}       Gestiona las rutas no encontradas (404)
  * @middleware {middleware500}       Gestiona los errores del servidor (500)
 \*---------------------------------------------------------------------*/
 
 const {SECRET_API_KEY} = process.env
 
+const multer = require("multer")
+const path = require("path")
+
 const middlewareAuth = ( req , res , next ) => {
-    
+
     const { headers } = req
 
     if( headers['secret-api-key'] == SECRET_API_KEY ){
@@ -72,6 +76,39 @@ const middlewareObjectId = ( req , res , next ) => {
 
 }
 
+//HECHO CON CHATGPT 
+/* -------------------- MULTER (subida de imágenes) -------------------- */
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "public/cookies-png")
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname)
+        const base = path.basename(file.originalname, ext).replaceAll(" ", "-")
+        cb(null, `${Date.now()}_${base}${ext}`)
+    }
+})
+
+const fileFilter = (req, file, cb) => {
+    // Acepta solo imágenes
+    if (file.mimetype && file.mimetype.startsWith("image/")) {
+        cb(null, true)
+    } else {
+        const error = new Error("El archivo debe ser una imagen")
+        error.status = 400
+        cb(error)
+    }
+}
+
+const uploadImage = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 3 * 1024 * 1024 } // 3MB
+})
+
+/* -------------------- ERRORES -------------------- */
+
 const middleware404 = ( req , res , next ) => {
         const error = new Error()
               error.message = `El endpoint al que llamas no existe`
@@ -90,6 +127,7 @@ module.exports = {
     middlewareType,
     middlewareVisible,
     middlewareObjectId,
+    uploadImage,
     middleware404,
     middleware500
 }

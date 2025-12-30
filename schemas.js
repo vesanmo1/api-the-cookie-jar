@@ -32,7 +32,7 @@ const cookieSchema = new mongoose.Schema (
 
         types: {
             type: [String],                            // array de strings
-            enum: ['Vegana', 'Sin gluten'],           // valores permitidos
+            enum: ['Vegana', 'Sin gluten'],            // valores permitidos
             default: [],                               // si no se envía nada → []
             required: false                            // campo opcional
         },
@@ -45,8 +45,9 @@ const cookieSchema = new mongoose.Schema (
         
         image_webp: {
             type: String,
-            required: true,
+            required: false,
             trim: true,
+            default: ""
         },
 
         visible: {

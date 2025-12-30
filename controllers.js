@@ -60,45 +60,73 @@ const getCookiesByVisibility = async ( req, res , next ) => {
 
 const postCookies = async ( req , res , next) => {
 
-    const { cookie_name , description , types , image_png , image_webp , visible } = req.body
+    try {
 
-    const newCookie = new Cookie({
-        cookie_name,
-        description,
-        types,
-        image_png,
-        image_webp,
-        visible
-    })
+        const { cookie_name , description , types , image_png , image_webp , visible } = req.body
 
-    await newCookie.save()
-    const search = await Cookie.find()
+        //MULTER: CON CHATGPT
+        let final_image_png = image_png
+        if (req.file) {
+            final_image_png = `${req.protocol}://${req.get("host")}/cookies-png/${req.file.filename}`
+        }
 
-    res
-        .status(201)
-        .json({     
-            message: 'Añadiendo cookie',                    
-            details: newCookie,
-            data: search
-        })  
+        const newCookie = new Cookie({
+            cookie_name,
+            description,
+            types,
+            image_png: final_image_png,
+            image_webp,
+            visible
+        })
+
+        await newCookie.save()
+        const search = await Cookie.find()
+
+        res
+            .status(201)
+            .json({     
+                message: 'Añadiendo cookie',                    
+                details: newCookie,
+                data: search
+            }) 
+
+    } catch (error) {
+        next(error)
+    }
 }
 
 const putCookies = async ( req , res , next) => {
 
-    const { _id } = req.params
-    const { cookie_name , description , types , image_png , image_webp , visible } = req.body
+    try {
 
-    const update = await Cookie.findByIdAndUpdate( _id , { cookie_name , description , types , image_png , image_webp , visible })
+        const { _id } = req.params
+        const { cookie_name , description , types , image_png , image_webp , visible } = req.body
 
-    const search = await Cookie.find()
+        //MULTER: CON CHATGPT
+        let final_image_png = image_png
+        if (req.file) { 
+            final_image_png = `${req.protocol}://${req.get("host")}/cookies-png/${req.file.filename}` 
+        }
 
-    res
-        .status(200)
-        .json({     
-            message: `Actualizando la cookie con _id ${_id}`,
-            details: update,
-            data: search
-        })
+        const update = await Cookie.findByIdAndUpdate(
+            _id,
+            { cookie_name , description , types , image_png: final_image_png , image_webp , visible }, 
+            { new: true } 
+        )
+
+        const search = await Cookie.find()
+
+        res
+            .status(200)
+            .json({     
+                message: `Actualizando la cookie con _id ${_id}`,
+                details: update,
+                data: search
+            })
+            
+    } catch (error) {
+        next(error)
+    }
 }
 
 const deleteCookies = async ( req , res , next) => {
