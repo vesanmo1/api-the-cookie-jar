@@ -59,12 +59,6 @@ const app = express()
     // Permite parsear datos codificados en URL (formularios, etc.)
     app.use( express.urlencoded({ extended : false }) )
 
-    // Sirve la carpeta "public" como contenido estático (imágenes, etc.). 
-    // Así cualquier archivo dentro de /public queda accesible por URL sin pasar por las rutas,
-    // por ejemplo: /public/cookies-png/foto.png se sirve como /cookies-png/foto.png.
-    // Importante: va antes de middlewareAuth para que el navegador pueda cargar las imágenes sin enviar la API key.
-    app.use(express.static(path.join(__dirname, "public")))
-
     // Middleware de autenticación que se ejecuta antes de las rutas protegidas
     app.use( middlewareAuth )
 

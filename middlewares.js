@@ -7,8 +7,9 @@
  * @middleware {middlewareAuth}      Comprueba la cabecera secret-api-key para autorizar la petición
  * @middleware {middlewareType}      Valida el parámetro :type ("Vegana" | "Sin-gluten")
  * @middleware {middlewareVisible}   Valida el parámetro :visible (true | false)
- * @middleware {middlewareObjectId}  Valida el parámetro :_id como ObjectId de MongoDB
- * @middleware {uploadImage}             Multer: gestiona subida de imagen (multipart/form-data)
+ * @middleware {middlewareObjectId}      Valida el parámetro :_id como ObjectId de MongoDB
+ * @middleware {uploadImage}             Multer: guarda el PNG en el public del FRONT
+ * @middleware {middlewarePngToWebp}     Convierte el PNG subido a WEBP y lo guarda en el public del FRONT
  * @middleware {middleware404}       Gestiona las rutas no encontradas (404)
  * @middleware {middleware500}       Gestiona los errores del servidor (500)
 \*---------------------------------------------------------------------*/
@@ -17,6 +18,8 @@ const {SECRET_API_KEY} = process.env
 
 const multer = require("multer")
 const path = require("path")
+const sharp = require("sharp") 
+const fs = require("fs")     
 
 const middlewareAuth = ( req , res , next ) => {
 
@@ -76,12 +79,22 @@ const middlewareObjectId = ( req , res , next ) => {
 
 }
 
-//HECHO CON CHATGPT 
+//HECHO CON CHATGPT Y EJEMPLO DE CLASE
 /* -------------------- MULTER (subida de imágenes) -------------------- */
+/* -------------------- conversión de png a webp -------------------- */
+
+// Rutas absolutas al public del FRONT (cookies-png y cookies-webp)
+const FRONT_PUBLIC_DIR = path.join(__dirname, "..", "web-the-cookie-jar", "public")
+const FRONT_PNG_DIR    = path.join(FRONT_PUBLIC_DIR, "cookies-png")                       
+const FRONT_WEBP_DIR   = path.join(FRONT_PUBLIC_DIR, "cookies-webp")                     
+
+// Aseguramos que existen las carpetas
+if (!fs.existsSync(FRONT_PNG_DIR))  fs.mkdirSync(FRONT_PNG_DIR, { recursive: true })   
+if (!fs.existsSync(FRONT_WEBP_DIR)) fs.mkdirSync(FRONT_WEBP_DIR, { recursive: true })     
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "public/cookies-png")
+        cb(null, FRONT_PNG_DIR) 
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname)
@@ -90,12 +103,12 @@ const storage = multer.diskStorage({
     }
 })
 
+// Aceptar SOLO PNG
 const fileFilter = (req, file, cb) => {
-    // Acepta solo imágenes
-    if (file.mimetype && file.mimetype.startsWith("image/")) {
+    if (file.mimetype === "image/png") {
         cb(null, true)
     } else {
-        const error = new Error("El archivo debe ser una imagen")
+        const error = new Error("Solo se permiten imágenes PNG")
         error.status = 400
         cb(error)
     }
@@ -106,6 +119,33 @@ const uploadImage = multer({
     fileFilter,
     limits: { fileSize: 3 * 1024 * 1024 } // 3MB
 })
+
+//HECHO CON CHATGPT
+/* -------------------- conversión de png a webp -------------------- */
+const middlewarePngToWebp = async (req, res, next) => {
+    try {
+
+        if (!req.file) return next()
+
+        const pngFilename = req.file.filename
+        const pngPath = path.join(FRONT_PNG_DIR, pngFilename)
+
+        const webpFilename = pngFilename.replace(path.extname(pngFilename), ".webp")
+        const webpPath = path.join(FRONT_WEBP_DIR, webpFilename)
+
+        await sharp(pngPath)
+            .webp({ quality: 80 })
+            .toFile(webpPath)
+
+        // Lo dejamos disponible para el controller
+        req.webpFilename = webpFilename
+
+        next()
+
+    } catch (error) {
+        next(error)
+    }
+}
 
 /* -------------------- ERRORES -------------------- */
 
@@ -128,6 +168,7 @@ module.exports = {
     middlewareVisible,
     middlewareObjectId,
     uploadImage,
+    middlewarePngToWebp,
     middleware404,
     middleware500
 }

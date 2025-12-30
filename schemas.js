@@ -27,7 +27,8 @@ const cookieSchema = new mongoose.Schema (
             type: String,
             required: true,
             trim: true,
-            maxlength: [400, 'La descripción no puede superar los 400 caracteres']
+            maxlength: [400, 'La descripción no puede superar los 400 caracteres'],
+            minlength: [350, 'La descripción debe tener al menos 350 caracteres']
         },
 
         types: {
@@ -52,7 +53,7 @@ const cookieSchema = new mongoose.Schema (
 
         visible: {
             type: Boolean,
-            required: true,
+            required: false,
             default: true,
         },
     },

@@ -62,20 +62,20 @@ const postCookies = async ( req , res , next) => {
 
     try {
 
-        const { cookie_name , description , types , image_png , image_webp , visible } = req.body
+        const { cookie_name , description , types , visible } = req.body
 
-        //MULTER: CON CHATGPT
-        let final_image_png = image_png
-        if (req.file) {
-            final_image_png = `${req.protocol}://${req.get("host")}/cookies-png/${req.file.filename}`
+        if (!req.file) {                                
+            const error = new Error("Falta la imagen PNG")
+            error.status = 400                            
+            throw error                                   
         }
 
         const newCookie = new Cookie({
             cookie_name,
             description,
             types,
-            image_png: final_image_png,
-            image_webp,
+            image_png: req.file.filename,
+            image_webp: req.webpFilename || "",
             visible
         })
 
@@ -84,11 +84,11 @@ const postCookies = async ( req , res , next) => {
 
         res
             .status(201)
-            .json({     
-                message: 'Añadiendo cookie',                    
+            .json({
+                message: "Añadiendo cookie",
                 details: newCookie,
                 data: search
-            }) 
+            })
 
     } catch (error) {
         next(error)
@@ -100,17 +100,17 @@ const putCookies = async ( req , res , next) => {
     try {
 
         const { _id } = req.params
-        const { cookie_name , description , types , image_png , image_webp , visible } = req.body
+        const { cookie_name , description , types , visible } = req.body
 
         //MULTER: CON CHATGPT
-        let final_image_png = image_png
-        if (req.file) { 
-            final_image_png = `${req.protocol}://${req.get("host")}/cookies-png/${req.file.filename}` 
+        let updateData = { cookie_name , description , types , visible }
+        if (req.file) {                                                
+            updateData.image_png = req.file.filename                     
+            updateData.image_webp = req.webpFilename || ""             
         }
-
         const update = await Cookie.findByIdAndUpdate(
             _id,
-            { cookie_name , description , types , image_png: final_image_png , image_webp , visible }, 
+            updateData,                                                
             { new: true } 
         )
 

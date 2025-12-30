@@ -14,18 +14,16 @@ const express = require('express')
 
 
 const { getCookies, postCookies, putCookies, deleteCookies, getCookiesByType, getCookiesByVisibility } = require('./controllers')
-const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage } = require('./middlewares')
+const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage, middlewarePngToWebp } = require('./middlewares')
 
 const router = express.Router()
 
     router.route('/')
         .get( getCookies )
-        //Multer antes del controller. El nombre del campo file: "image_png"
-        .post(uploadImage.single("image_png"), postCookies) 
+        .post(uploadImage.single("image_png"), middlewarePngToWebp, postCookies)
 
     router.route('/:_id' )
-        // Multer también en PUT
-        .put(middlewareObjectId, uploadImage.single("image_png"), putCookies)
+        .put(middlewareObjectId, uploadImage.single("image_png"), middlewarePngToWebp, putCookies)
         .delete( middlewareObjectId , deleteCookies )
 
     router.route('/type/:type' )
