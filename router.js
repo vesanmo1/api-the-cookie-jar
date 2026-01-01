@@ -19,10 +19,10 @@ const router = express.Router()
 
     router.route('/')
         .get( getCookies )
-        .post(uploadImage.single("image"), postCookies)
+        .post(uploadImage.single("image_png"), postCookies)
 
     router.route('/:_id' )
-        .put(middlewareObjectId, uploadImage.single("image"), putCookies)
+        .put(middlewareObjectId, uploadImage.single("image_png"), putCookies)
         .delete( middlewareObjectId , deleteCookies )
 
     router.route('/type/:type' )
