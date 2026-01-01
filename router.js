@@ -1,5 +1,4 @@
 /*-------------------------------------------------------------------------------------------------------*\
- * Router de cookies (router.js)
  * Este router maneja todas las solicitudes relacionadas con las cookies.
  
  * route {GET}    /                     Nos muestra una lista de todas las cookies
@@ -14,16 +13,16 @@ const express = require('express')
 
 
 const { getCookies, postCookies, putCookies, deleteCookies, getCookiesByType, getCookiesByVisibility } = require('./controllers')
-const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage, middlewarePngToWebp } = require('./middlewares')
+const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage } = require('./middlewares')
 
 const router = express.Router()
 
     router.route('/')
         .get( getCookies )
-        .post(uploadImage.single("image_png"), middlewarePngToWebp, postCookies)
+        .post(uploadImage.single("image"), postCookies)
 
     router.route('/:_id' )
-        .put(middlewareObjectId, uploadImage.single("image_png"), middlewarePngToWebp, putCookies)
+        .put(middlewareObjectId, uploadImage.single("image"), putCookies)
         .delete( middlewareObjectId , deleteCookies )
 
     router.route('/type/:type' )

@@ -1,16 +1,19 @@
 /*---------------------------------------------------------------*\
  * The Cookie Jar / Express API
-
- * Conectamos con la base de datos de cookies para gestionar 
- * la información y servirla a los clientes.
- 
+ *
+ * API REST para gestionar cookies y sus imágenes.
+ * Conecta con MongoDB (Mongoose) y recibe imágenes vía Multer (memoria)
+ * para subirlas a Cloudinary (sin almacenamiento en disco).
+ *
  * @middlewares {cors, middlewareAuth, middleware404, middleware500}
  * @routing     {Express Router}
  * @odm         {mongoose}
- 
+ * @service     {Cloudinary}
+ *
  * @endpoint    {/cookies}                 [get, post]
  * @endpoint    {/cookies/:_id}            [put, delete]
  * @endpoint    {/cookies/type/:type}      [get]
+ * @endpoint    {/cookies/visible/:visible}[get]
 \*---------------------------------------------------------------*/
 
 // Limpia la consola cada vez que se inicia la aplicación
@@ -21,7 +24,6 @@ console.log(`Iniciando The Cookie Jar`)
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
-const path = require('path')
 
 // Carga las variables de entorno desde el archivo .env
 require('dotenv').config()
@@ -52,6 +54,10 @@ const app = express()
 
     // Habilita CORS para permitir peticiones desde otros orígenes
     app.use( cors() )
+    app.use((req, res, next) => {
+        if (req.method === "OPTIONS") return cors()(req, res, next)
+        next()
+    })
 
     // Permite parsear el cuerpo de las peticiones con formato JSON
     app.use( express.json() )
@@ -59,22 +65,15 @@ const app = express()
     // Permite parsear datos codificados en URL (formularios, etc.)
     app.use( express.urlencoded({ extended : false }) )
 
-    // Middleware de autenticación que se ejecuta antes de las rutas protegidas
-    app.use( middlewareAuth )
+// ----- RUTAS PRINCIPALES -----
 
-    // ----- RUTAS PRINCIPALES -----
+// CAMBIO: auth solo para /cookies (más limpio que global)
+    app.use('/cookies', middlewareAuth, router)
 
-    // Todas las rutas relacionadas con "cookies" se delegan al router correspondiente
-    app.use( '/cookies' , router )
+// ----- MIDDLEWARES DE GESTIÓN DE ERRORES -----
 
-    // ----- MIDDLEWARES DE GESTIÓN DE ERRORES -----
-
-    // Middleware para manejar rutas no encontradas (404)
-    app.use( middleware404 )
-
-    // Middleware para manejar errores internos del servidor (500)
-    app.use( middleware500 )
-    
+    app.use(middleware404)
+    app.use(middleware500)
 
 // ----- INICIO DEL SERVIDOR -----
 
@@ -82,3 +81,5 @@ const app = express()
 app.listen( PORT , ()=> {
     console.log(`Iniciando API en el puesrto ${PORT}`)
 }) 
+
+

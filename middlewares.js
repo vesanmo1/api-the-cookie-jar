@@ -4,24 +4,25 @@
  * Estos middlewares manejan la autenticación, la validación de parámetros
  * y los errores de la API.
  *
- * @middleware {middlewareAuth}      Comprueba la cabecera secret-api-key para autorizar la petición
- * @middleware {middlewareType}      Valida el parámetro :type ("Vegana" | "Sin-gluten")
- * @middleware {middlewareVisible}   Valida el parámetro :visible (true | false)
+ * @middleware {middlewareAuth}          Comprueba la cabecera secret-api-key para autorizar la petición
+ * @middleware {middlewareType}          Valida el parámetro :type ("Vegana" | "Sin-gluten")
+ * @middleware {middlewareVisible}       Valida el parámetro :visible (true | false)
  * @middleware {middlewareObjectId}      Valida el parámetro :_id como ObjectId de MongoDB
- * @middleware {uploadImage}             Multer: guarda el PNG en el public del FRONT
- * @middleware {middlewarePngToWebp}     Convierte el PNG subido a WEBP y lo guarda en el public del FRONT
- * @middleware {middleware404}       Gestiona las rutas no encontradas (404)
- * @middleware {middleware500}       Gestiona los errores del servidor (500)
+ * @middleware {uploadImage}             Multer: guarda el archivo en MEMORIA (req.file.buffer) para subirlo a Cloudinary
+ * @middleware {middleware404}           Gestiona las rutas no encontradas (404)
+ * @middleware {middleware500}           Gestiona los errores del servidor (500)
 \*---------------------------------------------------------------------*/
 
-const {SECRET_API_KEY} = process.env
+ const {SECRET_API_KEY} = process.env
 
-const multer = require("multer")
-const path = require("path")
-const sharp = require("sharp") 
-const fs = require("fs")     
+ const multer = require("multer")
+
+/* -------------------- AUTH -------------------- */
 
 const middlewareAuth = ( req , res , next ) => {
+
+    // Clave para que en PRODUCCIÓN no falle CORS.
+    if (req.method === "OPTIONS") return next()
 
     const { headers } = req
 
@@ -33,6 +34,8 @@ const middlewareAuth = ( req , res , next ) => {
         next(error)
     } 
 }
+
+/* -------------------- VALIDACIONES -------------------- */
 
 const middlewareType = ( req , res , next ) => {
     
@@ -83,27 +86,8 @@ const middlewareObjectId = ( req , res , next ) => {
 /* -------------------- MULTER (subida de imágenes) -------------------- */
 /* -------------------- conversión de png a webp -------------------- */
 
-// Rutas absolutas al public del FRONT (cookies-png y cookies-webp)
-const FRONT_PUBLIC_DIR = path.join(__dirname, "..", "web-the-cookie-jar", "public")
-const FRONT_PNG_DIR    = path.join(FRONT_PUBLIC_DIR, "cookies-png")                       
-const FRONT_WEBP_DIR   = path.join(FRONT_PUBLIC_DIR, "cookies-webp")                     
+const storage = multer.memoryStorage()
 
-// Aseguramos que existen las carpetas
-if (!fs.existsSync(FRONT_PNG_DIR))  fs.mkdirSync(FRONT_PNG_DIR, { recursive: true })   
-if (!fs.existsSync(FRONT_WEBP_DIR)) fs.mkdirSync(FRONT_WEBP_DIR, { recursive: true })     
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, FRONT_PNG_DIR) 
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname)
-        const base = path.basename(file.originalname, ext).replaceAll(" ", "-")
-        cb(null, `${Date.now()}_${base}${ext}`)
-    }
-})
-
-// Aceptar SOLO PNG
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === "image/png") {
         cb(null, true)
@@ -120,33 +104,6 @@ const uploadImage = multer({
     limits: { fileSize: 3 * 1024 * 1024 } // 3MB
 })
 
-//HECHO CON CHATGPT
-/* -------------------- conversión de png a webp -------------------- */
-const middlewarePngToWebp = async (req, res, next) => {
-    try {
-
-        if (!req.file) return next()
-
-        const pngFilename = req.file.filename
-        const pngPath = path.join(FRONT_PNG_DIR, pngFilename)
-
-        const webpFilename = pngFilename.replace(path.extname(pngFilename), ".webp")
-        const webpPath = path.join(FRONT_WEBP_DIR, webpFilename)
-
-        await sharp(pngPath)
-            .webp({ quality: 80 })
-            .toFile(webpPath)
-
-        // Lo dejamos disponible para el controller
-        req.webpFilename = webpFilename
-
-        next()
-
-    } catch (error) {
-        next(error)
-    }
-}
-
 /* -------------------- ERRORES -------------------- */
 
 const middleware404 = ( req , res , next ) => {
@@ -157,9 +114,9 @@ const middleware404 = ( req , res , next ) => {
     }
   
 const middleware500 = ( error , req , res , next ) => {
-        let status = error.status || 500
-        res.status(status).json(`${error.message}`)
-    }
+    let status = error.status || 500
+    res.status(status).json({ message: error.message, data: null })
+}
 
 
 module.exports = {
@@ -168,7 +125,6 @@ module.exports = {
     middlewareVisible,
     middlewareObjectId,
     uploadImage,
-    middlewarePngToWebp,
     middleware404,
     middleware500
 }

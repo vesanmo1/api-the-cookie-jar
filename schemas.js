@@ -1,15 +1,19 @@
 /*-----------------------------------------------------------------------------*\
  * Modelo de Cookie
- 
+ *
  * Este modelo define la estructura y comportamiento de los registros
  * de cookies en la base de datos.
- 
- * property {string}   cookie_name  - Nombre de la cookie.
- * property {string}   description  - Descripción de la cookie.
- * property {string[]} types        - Tipos de cookie ("Vegana", "Sin gluten").
- * property {string}   image_png    - Ruta/URL de la imagen PNG.
- * property {string}   image_webp   - Ruta/URL de la imagen WEBP.
- * property {boolean}  visible      - Si la cookie se muestra o no.
+ *
+ * property {string}   cookie_name       - Nombre de la cookie.
+ * property {string}   description       - Descripción de la cookie.
+ * property {string[]} types             - Tipos de cookie ("Vegana", "Sin gluten").
+ * property {string}   image_png         - URL Cloudinary de la imagen (secure_url).
+ * property {string}   image_public_id   - Identificador de Cloudinary (public_id) para generar formatos (WebP) por transformación.
+ * property {boolean}  visible           - Si la cookie se muestra o no.
+ *
+ * Nota:
+ * - No se almacena image_webp. La versión WebP se obtiene “automática” usando transformaciones de Cloudinary
+ *   (por ejemplo, reemplazando "/upload/" por "/upload/f_auto/" o "/upload/f_webp/" en la URL).
 \*-----------------------------------------------------------------------------*/
 
 const mongoose = require('mongoose')
@@ -44,7 +48,7 @@ const cookieSchema = new mongoose.Schema (
             trim: true,
         },   
         
-        image_webp: {
+        image_public_id: {
             type: String,
             required: false,
             trim: true,
