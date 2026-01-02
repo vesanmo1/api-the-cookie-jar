@@ -93,7 +93,14 @@ const postCookies = async ( req , res , next) => {
 
     try {
 
-        const { cookie_name , description , types , visible } = req.body
+        const { cookie_name , description } = req.body
+
+        let types = []
+        if (req.body.types) {
+            try { types = JSON.parse(req.body.types) } catch { types = [] }
+        }
+
+        const visible = (req.body.visible === "true" || req.body.visible === true)
 
         if (!req.file) {
             const error = new Error("Falta la imagen PNG")
@@ -136,7 +143,13 @@ const putCookies = async ( req , res , next) => {
     try {
 
         const { _id } = req.params
-        const { cookie_name , description , types , visible } = req.body
+        const { cookie_name , description , visible } = req.body
+
+        let types = []
+        if (req.body.types) {
+            try { types = JSON.parse(req.body.types) } 
+            catch { types = [] }
+        }
 
         let updateData = { cookie_name , description , types , visible }
 

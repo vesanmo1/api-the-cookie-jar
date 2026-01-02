@@ -5,7 +5,7 @@
  * y los errores de la API.
  *
  * @middleware {middlewareAuth}          Comprueba la cabecera secret-api-key para autorizar la petición
- * @middleware {middlewareType}          Valida el parámetro :type ("Vegana" | "Sin-gluten")
+ * @middleware {middlewareType}          Valida el parámetro :type ("vegana" | "sin-gluten")
  * @middleware {middlewareVisible}       Valida el parámetro :visible (true | false)
  * @middleware {middlewareObjectId}      Valida el parámetro :_id como ObjectId de MongoDB
  * @middleware {uploadImage}             Multer: guarda el archivo en MEMORIA (req.file.buffer) para subirlo a Cloudinary
