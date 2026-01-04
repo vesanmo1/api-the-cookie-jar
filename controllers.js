@@ -22,6 +22,9 @@
  * @route {DELETE} /cookies/:_id
 \*---------------------------------------------------------------------*/
 
+//ayuda de chatgpt en put y post para integrar el uso de imagenes con multer y cloudinary
+//en deleteCookie se ha añadido la misma lógica que en put para eliminar las imagenes de Cloudinary y no dejar archivos huérfanos
+
 const { Cookie } = require('./schemas')
 
 const cloudinary = require('./cloudinary')
@@ -143,44 +146,61 @@ const putCookies = async ( req , res , next) => {
     try {
 
         const { _id } = req.params
-        const { cookie_name , description , visible } = req.body
+        const { cookie_name , description } = req.body
 
-        let types = []
-        if (req.body.types) {
-            try { types = JSON.parse(req.body.types) } 
-            catch { types = [] }
+        let { types } = req.body
+        if (typeof types === "string") {
+            try { types = JSON.parse(types) } catch { types = [] }
+        } else if (!Array.isArray(types)) {
+            types = []
         }
 
-        let updateData = { cookie_name , description , types , visible }
+        let { visible } = req.body
+        if (typeof visible === "string") visible = visible === "true"
+        else visible = !!visible
 
-        //MULTER: CON CHATGPT        
+        // Base update (sin imagen)
+        let updateData = { cookie_name, description, types, visible }
 
+        // Si viene archivo nuevo => reemplazar imagen
         if (req.file) {
 
-            const result = await uploadBufferToCloudinary(req.file.buffer, {
-                folder: "the-cookie-jar",
-                resource_type: "image"
-            })
-
-            updateData.image_png = result.secure_url
-            updateData.image_public_id = result.public_id
+        // 1) Buscar cookie actual para saber qué public_id borrar
+        const current = await Cookie.findById(_id)
+        if (!current) {
+            const error = new Error("Cookie no encontrada")
+            error.status = 404
+            throw error
         }
 
-        const update = await Cookie.findByIdAndUpdate(
-            _id,
-            updateData,
-            { new: true }
-        )
+        // 2) Borrar imagen anterior en Cloudinary (si existe)
+        if (current.image_public_id) {
+            try {
+            await cloudinary.uploader.destroy(current.image_public_id, { resource_type: "image" })
+            } catch (err) {
+            // No abortamos la operación si falla el borrado, pero lo registras
+            console.log("Error borrando imagen anterior en Cloudinary:", err)
+            }
+        }
 
+        // 3) Subir imagen nueva
+        const result = await uploadBufferToCloudinary(req.file.buffer, {
+            folder: "the-cookie-jar",
+            resource_type: "image",
+        })
+
+        updateData.image_png = result.secure_url
+        updateData.image_public_id = result.public_id
+        }
+
+        const update = await Cookie.findByIdAndUpdate(_id, updateData, { new: true })
         const search = await Cookie.find()
 
-        res
-            .status(200)
-            .json({
-                message: `Actualizando la cookie con _id ${_id}`,
-                details: update,
-                data: search
-            })
+        res.status(200).json({
+        message: `Actualizando la cookie con _id ${_id}`,
+        details: update,
+        data: search,
+        })
 
     } catch (error) {
         next(error)
@@ -189,19 +209,44 @@ const putCookies = async ( req , res , next) => {
 
 const deleteCookies = async ( req , res , next) => {
 
-    const { _id } = req.params
+    try {
+        const { _id } = req.params
 
-    const deleteCookie = await Cookie.findByIdAndDelete( _id )
+        // 1) Buscar la cookie para saber qué imagen borrar
+        const cookie = await Cookie.findById(_id)
+        if (!cookie) {
+            const error = new Error("Cookie no encontrada")
+            error.status = 404
+            throw error
+        }
 
-    const search = await Cookie.find()
+        // 2) Borrar imagen en Cloudinary si existe
+        if (cookie.image_public_id) {
+            try {
+                await cloudinary.uploader.destroy(cookie.image_public_id, { resource_type: "image" })
+            } catch (err) {
+                // No abortamos: borramos igual la cookie aunque falle Cloudinary
+                console.log("Error borrando imagen en Cloudinary:", err)
+            }
+        }
 
-    res
-        .status(200)
-        .json({
-            message : `Eliminando la cookie con _id ${_id}`,
-            details: deleteCookie,
-            data : search
-        })
+        // 3) Borrar cookie en Mongo
+        const deleted = await Cookie.findByIdAndDelete(_id)
+
+        // 4) Devolver lista actualizada (siguiendo tu patrón)
+        const search = await Cookie.find()
+
+        res
+            .status(200)
+            .json({
+                message : `Eliminando la cookie con _id ${_id}`,
+                details: deleted,
+                data : search
+            })
+
+    } catch (error) {
+        next(error)
+    }
 }
 
 

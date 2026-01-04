@@ -13,7 +13,7 @@ const express = require('express')
 
 
 const { getCookies, postCookies, putCookies, deleteCookies, getCookiesByType, getCookiesByVisibility } = require('./controllers')
-const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage } = require('./middlewares')
+const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage, maybeUploadImage } = require('./middlewares')
 
 const router = express.Router()
 
@@ -22,7 +22,7 @@ const router = express.Router()
         .post(uploadImage.single("image_png"), postCookies)
 
     router.route('/:_id' )
-        .put(middlewareObjectId, uploadImage.single("image_png"), putCookies)
+        .put(middlewareObjectId, maybeUploadImage("image_png"), putCookies)
         .delete( middlewareObjectId , deleteCookies )
 
     router.route('/type/:type' )

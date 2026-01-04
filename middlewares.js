@@ -104,6 +104,18 @@ const uploadImage = multer({
     limits: { fileSize: 3 * 1024 * 1024 } // 3MB
 })
 
+const maybeUploadImage = (fieldName) => (req, res, next) => {
+    const contentType = req.headers["content-type"] || ""
+
+    // Si viene FormData, ejecutamos multer
+    if (contentType.includes("multipart/form-data")) {
+        return uploadImage.single(fieldName)(req, res, next)
+    }
+
+    // Si viene JSON u otra cosa, NO ejecutamos multer
+    return next()
+}
+
 /* -------------------- ERRORES -------------------- */
 
 const middleware404 = ( req , res , next ) => {
@@ -120,11 +132,12 @@ const middleware500 = ( error , req , res , next ) => {
 
 
 module.exports = {
-    middlewareAuth,
-    middlewareType,
-    middlewareVisible,
-    middlewareObjectId,
-    uploadImage,
-    middleware404,
-    middleware500
+  middlewareAuth,
+  middlewareType,
+  middlewareVisible,
+  middlewareObjectId,
+  uploadImage,
+  maybeUploadImage,
+  middleware404,
+  middleware500
 }
