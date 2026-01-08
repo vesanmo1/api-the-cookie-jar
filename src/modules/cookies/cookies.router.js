@@ -12,8 +12,8 @@
 const express = require('express')
 
 
-const { getCookies, postCookies, putCookies, deleteCookies, getCookiesByType, getCookiesByVisibility } = require('./controllers')
-const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage, maybeUploadImage } = require('./middlewares')
+const { getCookies, getCookiesByType, getCookiesByVisibility, postCookies, putCookies, deleteCookies } = require('./cookies.controllers')
+const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage, maybeUploadImage } = require('./cookies.middlewares')
 
 const router = express.Router()
 

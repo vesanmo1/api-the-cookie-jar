@@ -1,39 +1,4 @@
-/*---------------------------------------------------------------------*\
- * Middlewares de la API de Cookies (middlewares.js)
- *
- * Estos middlewares manejan la autenticación, la validación de parámetros
- * y los errores de la API.
- *
- * @middleware {middlewareAuth}          Comprueba la cabecera secret-api-key para autorizar la petición
- * @middleware {middlewareType}          Valida el parámetro :type ("vegana" | "sin-gluten")
- * @middleware {middlewareVisible}       Valida el parámetro :visible (true | false)
- * @middleware {middlewareObjectId}      Valida el parámetro :_id como ObjectId de MongoDB
- * @middleware {uploadImage}             Multer: guarda el archivo en MEMORIA (req.file.buffer) para subirlo a Cloudinary
- * @middleware {middleware404}           Gestiona las rutas no encontradas (404)
- * @middleware {middleware500}           Gestiona los errores del servidor (500)
-\*---------------------------------------------------------------------*/
-
- const {SECRET_API_KEY} = process.env
-
- const multer = require("multer")
-
-/* -------------------- AUTH -------------------- */
-
-const middlewareAuth = ( req , res , next ) => {
-
-    // Clave para que en PRODUCCIÓN no falle CORS.
-    if (req.method === "OPTIONS") return next()
-
-    const { headers } = req
-
-    if( headers['secret-api-key'] == SECRET_API_KEY ){
-        next()
-    }else{
-        let error = new Error (`No tienes autorización para ver el contenido`)
-            error.status = 403
-        next(error)
-    } 
-}
+const multer = require("multer")
 
 /* -------------------- VALIDACIONES -------------------- */
 
@@ -41,6 +6,7 @@ const middlewareType = ( req , res , next ) => {
     
     const {type} = req.params
 
+    //USO DE CHATGPT para la expresión regular
     const validType = /^(vegana|sin-gluten)$/i.test(type.trim())
     console.log(validType)
 
@@ -70,6 +36,8 @@ const middlewareVisible = ( req , res , next ) => {
 const middlewareObjectId = ( req , res , next ) => {
 
     const {_id} = req.params
+
+    //USO DE CHATGPT para la expresión regular
     const objectIdRegex = /^[a-f\d]{24}$/i
 
     if (objectIdRegex.test(_id) && _id.length !==0) {
@@ -116,28 +84,10 @@ const maybeUploadImage = (fieldName) => (req, res, next) => {
     return next()
 }
 
-/* -------------------- ERRORES -------------------- */
-
-const middleware404 = ( req , res , next ) => {
-        const error = new Error()
-              error.message = `El endpoint al que llamas no existe`
-              error.status  = 404 
-            next(error)
-    }
-  
-const middleware500 = ( error , req , res , next ) => {
-    let status = error.status || 500
-    res.status(status).json({ message: error.message, data: null })
-}
-
-
 module.exports = {
-  middlewareAuth,
   middlewareType,
   middlewareVisible,
   middlewareObjectId,
   uploadImage,
-  maybeUploadImage,
-  middleware404,
-  middleware500
+  maybeUploadImage
 }

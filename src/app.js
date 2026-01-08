@@ -16,36 +16,18 @@
  * @endpoint    {/cookies/visible/:visible}[get]
 \*---------------------------------------------------------------*/
 
-// Limpia la consola cada vez que se inicia la aplicación
-console.clear()
-console.log(`Iniciando The Cookie Jar`)
-
 // Importación de dependencias externas
 const express = require('express')
 const cors = require('cors')
-const mongoose = require('mongoose')
 
-// Carga las variables de entorno desde el archivo .env
-require('dotenv').config()
+// Importación de middlewares y routers propios de la aplicación
+const { middlewareAuth } = require("./modules/auth/auth.middlewares")
+const { router: cookiesRouter } = require("./modules/cookies/cookies.router")
+const { router: authRouter } = require("./modules/auth/auth.router")
 
-// Desestructuramos las variables de entorno necesarias
-const { PORT , MONGO_URL } = process.env
-
-// Importación de middlewares y router propios de la aplicación
-const { middlewareAuth, middleware404, middleware500 } = require('./middlewares')
-const { router } = require('./router')
-
-// Función asíncrona que establece la conexión con la base de datos MongoDB
-const connect = async () => {
-
-    await mongoose.connect(MONGO_URL)
-        .then ( ()=> console.log('🌿 Conectado a MongoDB'))
-        .catch (error => console.log(error.message))
-
-}
-
-// Llamada inicial para conectar con la base de datos al arrancar la API
-connect()
+// Middlewares de gestión de errores (/src/middlewares)
+const { middleware404 } = require("./middlewares/error404")
+const { middleware500 } = require("./middlewares/error500")
 
 // Creación de la aplicación de Express
 const app = express()
@@ -67,19 +49,15 @@ const app = express()
 
 // ----- RUTAS PRINCIPALES -----
 
-// CAMBIO: auth solo para /cookies (más limpio que global)
-    app.use('/cookies', middlewareAuth, router)
+    // Auth aplicado a /cookies
+    app.use("/cookies", middlewareAuth, cookiesRouter)
+
+    // Rutas de autenticación (login)
+    //app.use("/auth", authRouter)
 
 // ----- MIDDLEWARES DE GESTIÓN DE ERRORES -----
 
     app.use(middleware404)
     app.use(middleware500)
 
-// ----- INICIO DEL SERVIDOR -----
-
-// Arranca el servidor HTTP en el puerto indicado en las variables de entorno
-app.listen( PORT , ()=> {
-    console.log(`Iniciando API en el puesrto ${PORT}`)
-}) 
-
-
+module.exports = { app }

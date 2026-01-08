@@ -9,11 +9,6 @@
  * - La versión WebP se obtiene automáticamente mediante transformaciones
  *   de Cloudinary (f_auto / f_webp), sin doble subida
  *
- * @odm         {mongoose}
- * @model       {Cookie}
- * @service     {Cloudinary}
- * @upload      {multer memoryStorage}
- *
  * @route {GET}    /cookies
  * @route {GET}    /cookies/type/:type
  * @route {GET}    /cookies/visible/:visible
@@ -25,13 +20,13 @@
 //ayuda de chatgpt en put y post para integrar el uso de imagenes con multer y cloudinary
 //en deleteCookie se ha añadido la misma lógica que en put para eliminar las imagenes de Cloudinary y no dejar archivos huérfanos
 
-const { Cookie } = require('./schemas')
+const { Cookie } = require("./cookies.schemas")
 
-const cloudinary = require('./cloudinary')
-const streamifier = require('streamifier')
+const cloudinary = require("../../config/cloudinary")
+const streamifier = require("streamifier")
 
 //HECHO CON CHATGPT Y EJEMPLO DE CLASE
-// Helper para subir buffer a Cloudinary (patrón típico de clase)
+// Helper para subir buffer a Cloudinary
 const uploadBufferToCloudinary = (buffer, options = {}) => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -60,13 +55,15 @@ const getCookiesByType = async ( req , res , next) => {
     const { type } = req.params
 
     // HECHO CON CHATGPT
-    // Mapeo de slug (URL) → valor tal y como está en la BD
+    // Diccionario (TYPE_MAP) que traduce:
+    //   "vegana"     -> "Vegana"
+    //   "sin-gluten" -> "Sin gluten"
     const TYPE_MAP = {
         "vegana": "Vegana",
         "sin-gluten": "Sin gluten",
     }
 
-    const dbType = TYPE_MAP[type] || type
+    const dbType = TYPE_MAP[type]
 
     const search = await Cookie.find({ types: dbType })
 
