@@ -11,9 +11,8 @@
  * @env         {CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET}
 \*---------------------------------------------------------------*/
 
-// HECHO CON CHATGPT Y EJEMPLO DE CLASE
+// HECHO CON CHATGPT
 // Cloudinary es un servicio de almacenamiento y gestión de archivos multimedia (imágenes, vídeos, GIFs) en la nube.
-// Para usar con Multer
 
 const cloudinary = require("cloudinary").v2;
 

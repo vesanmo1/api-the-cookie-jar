@@ -1,31 +1,35 @@
-/*---------------------------------------------------------------------*\
- * The Cookie Jar / Cookies Controller (controllers.js)
+/*-----------------------------------------------------------------------------*\
+ * Controlador de Cookies (cookies.controllers.js)
  *
- * Controlador para gestionar las cookies y sus filtros.
- * Incluye subida de imágenes a Cloudinary usando Multer en memoria:
- * - La imagen llega en req.file.buffer
- * - Se sube UNA sola vez a Cloudinary
- * - Se guarda la URL (secure_url) y el public_id en MongoDB
- * - La versión WebP se obtiene automáticamente mediante transformaciones
- *   de Cloudinary (f_auto / f_webp), sin doble subida
+ * Este controlador gestiona el recurso "cookies" y sus filtros.
+ * Incluye integración con Multer en memoria + Cloudinary:
+ * - La imagen llega en req.file.buffer (multer.memoryStorage()).
+ * - Se sube UNA sola vez a Cloudinary mediante upload_stream (sin guardar en disco).
+ * - Se guarda en MongoDB:
+ *   - image_png: URL segura (secure_url).
+ *   - image_public_id: public_id para borrados y transformaciones.
+ * - La versión WebP NO se almacena: se obtiene mediante transformaciones de Cloudinary
+ *   (por ejemplo usando f_auto / f_webp en la URL).
  *
- * @route {GET}    /cookies
- * @route {GET}    /cookies/type/:type
- * @route {GET}    /cookies/visible/:visible
- * @route {POST}   /cookies
- * @route {PUT}    /cookies/:_id
- * @route {DELETE} /cookies/:_id
-\*---------------------------------------------------------------------*/
-
-//ayuda de chatgpt en put y post para integrar el uso de imagenes con multer y cloudinary
-//en deleteCookie se ha añadido la misma lógica que en put para eliminar las imagenes de Cloudinary y no dejar archivos huérfanos
+ * route {GET}    /cookies                  Lista todas las cookies.
+ * route {GET}    /cookies/type/:type       Lista cookies filtradas por tipo (vegana | sin-gluten).
+ * route {GET}    /cookies/visible/:visible Lista cookies filtradas por visibilidad (true | false).
+ * route {POST}   /cookies                  Crea una cookie (requiere imagen PNG).
+ * route {PUT}    /cookies/:_id             Actualiza una cookie. Reemplaza imagen si llega req.file.
+ * route {DELETE} /cookies/:_id             Elimina una cookie y borra su imagen en Cloudinary.
+ *
+ * Nota:
+ * - Ayuda de CHATGPT en put y post para integrar el uso de imagenes con multer y cloudinary
+ *   en deleteCookie se ha añadido la misma lógica que en put para eliminar las imagenes de Cloudinary y no dejar archivos huérfanos
+ * - Si falla el borrado en Cloudinary, no se aborta la operación: se continúa con la actualización/borrado en Mongo.
+\*-----------------------------------------------------------------------------*/
 
 const { Cookie } = require("./cookies.schemas")
 
 const cloudinary = require("../../config/cloudinary")
 const streamifier = require("streamifier")
 
-//HECHO CON CHATGPT Y EJEMPLO DE CLASE
+//HECHO CON CHATGPT
 // Helper para subir buffer a Cloudinary
 const uploadBufferToCloudinary = (buffer, options = {}) => {
     return new Promise((resolve, reject) => {

@@ -1,6 +1,20 @@
-/*---------------------------------------------------------------*\
- * The Cookie Jar / Express API
-\*---------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*\
+ * The Cookie Jar / Express API (server.js)
+ *
+ * Punto de entrada de la API.
+ * Inicializa el entorno, conecta con MongoDB y levanta el servidor HTTP.
+ *
+ * Flujo:
+ * - Limpia la consola y muestra un mensaje de arranque.
+ * - Carga variables de entorno desde .env.
+ * - Obtiene el puerto (PORT) desde process.env.
+ * - Importa la app Express ya configurada (middlewares, rutas y manejo de errores).
+ * - Conecta a MongoDB.
+ * - Arranca el servidor escuchando en PORT.
+ *
+ * Requisito:
+ * - Definir PORT en el archivo .env.
+\*-----------------------------------------------------------------------------*/
 
 // Limpia la consola cada vez que se inicia la aplicación
 console.clear()

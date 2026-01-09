@@ -1,3 +1,32 @@
+/*-----------------------------------------------------------------------------*\
+ * Middlewares de Cookies
+ *
+ * Este archivo agrupa validaciones de parámetros de ruta y la configuración
+ * de multer para la subida de imágenes.
+ *
+ * middleware {function} middlewareType       - Valida el parámetro :type.
+ *                                            - Acepta "vegana" o "sin-gluten" (case-insensitive).
+ *
+ * middleware {function} middlewareVisible    - Valida el parámetro :visible.
+ *                                            - Acepta únicamente "true" o "false".
+ *
+ * middleware {function} middlewareObjectId   - Valida el parámetro :_id como ObjectId de MongoDB.
+ *                                            - Requiere 24 caracteres hexadecimales.
+ *
+ * middleware {multer}   uploadImage          - Middleware de multer para subir imágenes PNG.
+ *                                            - Usa memoryStorage.
+ *                                            - Solo permite mimetype "image/png".
+ *                                            - Límite de tamaño: 3MB.
+ *
+ * middleware {function} maybeUploadImage     - Ejecuta uploadImage.single(fieldName) solo si la request
+ *                                            viene en multipart/form-data; si no, pasa al siguiente middleware.
+ *
+ * Nota:
+ * - La “conversión a WebP” no se realiza en este archivo. Aquí únicamente se valida y se carga el PNG
+ *   en memoria para que otro paso (controller/servicio) procese y/o suba a Cloudinary.
+ * - Se ha usado CHATGPT para los middlewares de subida de imágenes (MULTER)
+\*-----------------------------------------------------------------------------*/
+
 const multer = require("multer")
 
 /* -------------------- VALIDACIONES -------------------- */
@@ -52,7 +81,7 @@ const middlewareObjectId = ( req , res , next ) => {
 
 //HECHO CON CHATGPT Y EJEMPLO DE CLASE
 /* -------------------- MULTER (subida de imágenes) -------------------- */
-/* -------------------- conversión de png a webp -------------------- */
+/* --------------------- conversión de png a webp -----.---------------- */
 
 const storage = multer.memoryStorage()
 
