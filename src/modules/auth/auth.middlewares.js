@@ -41,7 +41,7 @@ const middlewareAuth = (req, res, next) => {
     // 3) No están vacías
     if (user_name.trim().length < 4 || password.trim().length < 4) {
 
-        const error = new Error("Credenciales inválidas: no pueden estar vacías")
+        const error = new Error("Credenciales inválidas: debe contener al menos 4 caracteres")
         error.status = 400
         return next(error)
     }
