@@ -1,78 +1,64 @@
 /*-----------------------------------------------------------------------------*\
  * Auth Middlewares
  *
- * Este archivo contiene validaciones de credenciales y un middleware de protección.
+ * Middlewares de validación para el endpoint de autenticación.
+ * Comprueba que las credenciales en req.body sean correctas antes de llegar al
+ * controlador.
  *
- * middleware {function} middlewareUserName   - Valida el campo user_name del body.
- *                                            - Requiere que exista y sea string.
- *                                            - Permite caracteres: letras, números y _.-
+ * middleware {function} middlewareAuth       Valida user_name y password del body.
  *
- * middleware {function} middlewarePassword   - Valida el campo password del body.
- *                                            - Requiere que exista y sea string.
- *                                            - Longitud permitida: entre 4 y 30 caracteres.
- *
- * middleware {function} middlewareAuth       - Middleware de autorización simple por cabecera.
- *                                            - Requiere header "x-login" con valor "true".
- *                                            - Si no, responde con error 401.
+ * Comportamiento:
+ * - Lee user_name y password desde req.body.
+ * - Si falta alguno, lanza error 400 (Faltan credenciales).
+ * - Si alguno no es string, lanza error 400 (Deben ser texto).
+ * - Si alguno tiene menos de 4 caracteres tras trim(), lanza error 400
+ *   (Credenciales inválidas).
+ * - Valida user_name con regex: solo permite letras, números, punto, guion y
+ *   guion bajo, con longitud entre 4 y 30 caracteres.
+ * - Si pasa todas las validaciones, ejecuta next() y continúa con el controller.
 \*-----------------------------------------------------------------------------*/
 
-const middlewareUserName = (req, res, next) => {
+const middlewareAuth = (req, res, next) => {
 
-    const { user_name } = req.body
+    const { user_name, password } = req.body
 
-    if (!user_name || typeof user_name !== "string") {
-        const error = new Error("El campo user_name es obligatorio")
+    // 1) Existen
+    if (user_name === undefined || password === undefined) {
+
+        const error = new Error("Faltan credenciales: user_name y/o password")
         error.status = 400
         return next(error)
     }
 
-    //USO DE CHATGPT para la expresión regular
-    const userNameValido = /^[A-Za-z0-9_.-]+$/.test( user_name.trim() )
-    console.log( userNameValido )
+    // 2) Son strings
+    if (typeof user_name !== "string" || typeof password !== "string") {
 
-    if (userNameValido) {
-        next()
-    } else {
-        const error = new Error("El campo user_name no es válido")
+        const error = new Error("Credenciales inválidas: deben ser texto")
         error.status = 400
-        next(error)
+        return next(error)
     }
+
+    // 3) No están vacías
+    if (user_name.trim().length < 4 || password.trim().length < 4) {
+
+        const error = new Error("Credenciales inválidas: no pueden estar vacías")
+        error.status = 400
+        return next(error)
+    }
+
+    // Expresión regular con CHATGPT
+    // Permite letras, números, guion bajo, guion y punto. 3 a 30 chars.
+    const userNameRegex = /^[a-zA-Z0-9._-]{4,30}$/
+
+    if (!userNameRegex.test(user_name.trim())) {
+      const error = new Error("El campo user_name no es válido")
+      error.status = 400
+      return next(error)
+    }
+
+  next()
 }
 
-const middlewarePassword = (req, res, next) => {
-  const { password } = req.body
-
-  if (!password || typeof password !== "string") {
-    const error = new Error("El campo password es obligatorio")
-    error.status = 400
-    return next(error)
-  }
-
-  // Reglas: entre 4 y 30 caracteres
-  const passwordValid = password.length >= 4 && password.length <= 30
-  console.log(passwordValid)
-
-  if (passwordValid) {
-    next()
-  } else {
-    const error = new Error("El campo password no es válido")
-    error.status = 400
-    next(error)
-  }
-}
-
-const middlewareAuth = (req, res, next) => {
-    const login = req.headers["x-login"]
-
-    if (login === "true") return next()
-
-    const error = new Error("No autorizado")
-    error.status = 401
-    next(error)
-}
-
-module.exports = {
-  middlewareUserName,
-  middlewarePassword,
-  middlewareAuth
+module.exports = { 
+    middlewareAuth 
 }

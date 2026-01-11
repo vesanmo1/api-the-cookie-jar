@@ -5,9 +5,9 @@
  * cada endpoint con sus middlewares y controllers correspondientes.
  *
  * route {GET}    /                     Lista todas las cookies.
- * route {POST}   /                     Crea una nueva cookie (requiere auth) y sube la imagen "image_png".
- * route {PUT}    /:_id                 Actualiza una cookie por su id (requiere auth), valida ObjectId y permite subir "image_png" opcional.
- * route {DELETE} /:_id                 Elimina una cookie por su id (requiere auth) y valida ObjectId.
+ * route {POST}   /                     Crea una nueva cookie y sube la imagen "image_png".
+ * route {PUT}    /:_id                 Actualiza una cookie por su id, valida ObjectId y permite subir "image_png" opcional.
+ * route {DELETE} /:_id                 Elimina una cookie por su id y valida ObjectId.
  * route {GET}    /type/:type           Lista cookies filtradas por tipo (valida el parámetro :type).
  * route {GET}    /visible/:visible     Lista cookies filtradas por visibilidad (valida el parámetro :visible).
  *
@@ -21,24 +21,23 @@ const express = require('express')
 
 const { getCookies, getCookiesByType, getCookiesByVisibility, postCookies, putCookies, deleteCookies } = require('./cookies.controllers')
 const { middlewareObjectId, middlewareType, middlewareVisible, uploadImage, maybeUploadImage } = require('./cookies.middlewares')
-const { middlewareAuth } = require("../auth/auth.middlewares")
 
-const router = express.Router()
+const cookiesRouter = express.Router()
 
-    router.route('/')
+    cookiesRouter.route('/')
         .get( getCookies )
-        .post(middlewareAuth, uploadImage.single("image_png"), postCookies)
+        .post( uploadImage.single("image_png"), postCookies )
 
-    router.route('/:_id' )
-        .put(middlewareAuth, middlewareObjectId, maybeUploadImage("image_png"), putCookies)
-        .delete(middlewareAuth, middlewareObjectId, deleteCookies)
+    cookiesRouter.route('/:_id')
+        .put( middlewareObjectId, maybeUploadImage("image_png"), putCookies )
+        .delete( middlewareObjectId, deleteCookies )
 
-    router.route('/type/:type' )
+    cookiesRouter.route('/type/:type')
         .get( middlewareType , getCookiesByType )
         
-    router.route('/visible/:visible')
-        .get( middlewareVisible , getCookiesByVisibility)
+    cookiesRouter.route('/visible/:visible')
+        .get( middlewareVisible , getCookiesByVisibility )
 
 module.exports = {
-    router
+    cookiesRouter
 }

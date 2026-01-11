@@ -3,14 +3,14 @@
  *
  * API REST para gestionar cookies y sus imágenes.
  * Conecta con MongoDB (vía Mongoose en el módulo de conexión) y expone endpoints
- * para CRUD y filtros. Las imágenes se reciben con Multer en memoria (en el módulo
+ * para CRUD y filtros. Las imágenes se reciben con Multer (configurado en el módulo
  * de cookies) y se suben a Cloudinary (sin almacenamiento en disco).
  *
- * middlewares {cors}                     - Habilita CORS y gestiona preflight OPTIONS.
+ * middlewares {cors}                     - Habilita CORS (incluye preflight OPTIONS).
  * middlewares {express.json}             - Parseo de JSON.
  * middlewares {express.urlencoded}       - Parseo de x-www-form-urlencoded.
- * middlewares {middleware404}            - Gestión de rutas no encontradas.
- * middlewares {middleware500}            - Gestión de errores del servidor.
+ * middlewares {middleware404}            - Rutas no encontradas (404).
+ * middlewares {middleware500}            - Gestión global de errores (status y mensaje).
  *
  * routing {router} /cookies              - Rutas del recurso cookies.
  * routing {router} /auth                 - Rutas de autenticación.
@@ -20,6 +20,7 @@
  * endpoint {/cookies/:_id}               - [PUT, DELETE]
  * endpoint {/cookies/type/:type}         - [GET]
  * endpoint {/cookies/visible/:visible}   - [GET]
+ * endpoint {/auth}                       - [POST]
 \*-----------------------------------------------------------------------------*/
 
 // Importación de dependencias externas
@@ -27,8 +28,8 @@ const express = require('express')
 const cors = require('cors')
 
 // Importación de routers de la aplicación
-const { router: cookiesRouter } = require("./modules/cookies/cookies.router")
-const { router: authRouter } = require("./modules/auth/auth.router")
+const { cookiesRouter } = require("./modules/cookies/cookies.router")
+const { authRouter } = require("./modules/auth/auth.router")
 
 // Middlewares de gestión de errores
 const { middleware404 } = require("./middlewares/error404")
