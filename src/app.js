@@ -42,7 +42,6 @@ const app = express()
 
     // Habilita CORS para permitir peticiones desde otros orígenes
     app.use( cors() )
-    app.options("*", cors())
 
     // Permite parsear el cuerpo de las peticiones con formato JSON
     app.use( express.json() )
