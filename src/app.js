@@ -3,10 +3,12 @@
  *
  * API REST para gestionar cookies y sus imágenes.
  * Conecta con MongoDB (vía Mongoose en el módulo de conexión) y expone endpoints
- * para CRUD y filtros. Las imágenes se reciben con Multer (configurado en el módulo
- * de cookies) y se suben a Cloudinary (sin almacenamiento en disco).
+ * para CRUD y filtros.
  *
- * middlewares {cors}                     - Habilita CORS (incluye preflight OPTIONS).
+ * El manejo de imágenes (Multer memoryStorage + subida a Cloudinary sin disco)
+ * se realiza en el módulo de cookies (middlewares/controllers), no en este archivo.
+ *
+ * middlewares {cors}                     - Habilita CORS.
  * middlewares {express.json}             - Parseo de JSON.
  * middlewares {express.urlencoded}       - Parseo de x-www-form-urlencoded.
  * middlewares {middleware404}            - Rutas no encontradas (404).
@@ -17,7 +19,7 @@
  *
  * endpoints:
  * endpoint {/cookies}                    - [GET, POST]
- * endpoint {/cookies/:_id}               - [PUT, DELETE]
+ * endpoint {/cookies/:_id}               - [PUT, PATCH, DELETE]
  * endpoint {/cookies/type/:type}         - [GET]
  * endpoint {/cookies/visible/:visible}   - [GET]
  * endpoint {/auth}                       - [POST]

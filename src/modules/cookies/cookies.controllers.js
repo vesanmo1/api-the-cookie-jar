@@ -11,16 +11,18 @@
  * - La versión WebP NO se almacena: se obtiene mediante transformaciones de Cloudinary
  *   (por ejemplo usando f_auto / f_webp en la URL).
  *
- * route {GET}    /cookies                  Lista todas las cookies.
- * route {GET}    /cookies/type/:type       Lista cookies filtradas por tipo (vegana | sin-gluten).
- * route {GET}    /cookies/visible/:visible Lista cookies filtradas por visibilidad (true | false).
- * route {POST}   /cookies                  Crea una cookie (requiere imagen PNG).
- * route {PUT}    /cookies/:_id             Actualiza una cookie. Reemplaza imagen si llega req.file.
- * route {DELETE} /cookies/:_id             Elimina una cookie y borra su imagen en Cloudinary.
+ * route {GET}    /cookies                       Lista todas las cookies.
+ * route {GET}    /cookies/type/:type            Lista cookies filtradas por tipo (vegana | sin-gluten).
+ * route {GET}    /cookies/visible/:visible      Lista cookies filtradas por visibilidad (true | false).
+ * route {POST}   /cookies                       Crea una cookie (requiere imagen PNG).
+ * route {PUT}    /cookies/:_id                  Actualiza una cookie. Reemplaza imagen si llega req.file.
+ * route {PATCH}  /cookies/visible/:_id          Actualiza SOLO la visibilidad (visible: true | false).
+ * route {DELETE} /cookies/:_id                  Elimina una cookie y borra su imagen en Cloudinary.
  *
  * Nota:
- * - Ayuda de CHATGPT en put y post para integrar el uso de imagenes con multer y cloudinary
- *   en deleteCookie se ha añadido la misma lógica que en put para eliminar las imagenes de Cloudinary y no dejar archivos huérfanos
+ * - Ayuda de ChatGPT en PUT y POST para integrar el uso de imágenes con Multer + Cloudinary.
+ * - En DELETE se ha añadido la misma lógica que en PUT para eliminar imágenes de Cloudinary
+ *   y evitar archivos huérfanos.
  * - Si falla el borrado en Cloudinary, no se aborta la operación: se continúa con la actualización/borrado en Mongo.
 \*-----------------------------------------------------------------------------*/
 
@@ -208,6 +210,27 @@ const putCookies = async ( req , res , next) => {
     }
 }
 
+const patchCookiesVisibility = async ( req , res , next ) => {
+
+    const { _id } = req.params
+    let { visible } = req.body
+
+    // Convertir string -> boolean si viene como "true"/"false"
+    if (typeof visible === "string") visible = (visible === "true")
+
+    const actualizar = await Cookie.findByIdAndUpdate( _id , { visible } )
+
+    const buscar = await Cookie.find()
+
+    res
+        .status(200)
+        .json({
+            message : `Cambiando la visibilidad a ${visible} del _id ${_id}`,
+            details : actualizar,
+            data : buscar
+        })
+}
+
 const deleteCookies = async ( req , res , next) => {
 
     try {
@@ -258,5 +281,6 @@ module.exports = {
     getCookiesByVisibility,
     postCookies,
     putCookies,
+    patchCookiesVisibility,
     deleteCookies
 }

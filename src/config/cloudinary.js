@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------*\
  * The Cookie Jar / Cloudinary config
  *
- * Configuración del servicio Cloudinary para la gestión de imágenes
- * en la nube. Se utiliza junto con Multer (memoryStorage) para subir
- * archivos desde la API sin almacenarlos en disco.
+ * Configuración del cliente de Cloudinary (SDK v2) para la gestión
+ * de imágenes en la nube.
+ *
+ * Este módulo solo inicializa Cloudinary con variables de entorno.
+ * La subida de archivos (por ejemplo, buffers provenientes de Multer
+ * con memoryStorage) se realiza en los controllers/middlewares.
  *
  * @service     {Cloudinary}
- * @upload      {images}
- * @storage     {cloud}
  * @env         {CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET}
 \*---------------------------------------------------------------*/
 
